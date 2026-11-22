@@ -11,9 +11,13 @@ class Auth extends Controller
      */
     public function index()
     {
+        if (session()->get('isLoggedIn')) {
+            return redirect()->to(site_url('dashboard'));
+        }
+
         // helper 'form' dibutuhkan untuk csrf_field()
         helper('form');
-        
+
         // Cukup tampilkan view-nya
         return view('login_page');
     }
@@ -35,14 +39,29 @@ class Auth extends Controller
 
         // Validasi sederhana
         if ($email === $correct_email && $password === $correct_password) {
-            // Jika login berhasil
-            $data['success'] = 'Login Berhasil! Selamat datang.';
-        } else {
-            // Jika login gagal
-            $data['error'] = 'Email atau Password yang Anda masukkan salah.';
+            session()->set([
+                'isLoggedIn' => true,
+                'user_email' => $email,
+                'user_name'  => 'Admin Ebdesk',
+            ]);
+
+            return redirect()->to(site_url('dashboard'));
         }
-        
-        // Kembali ke halaman login dengan membawa pesan error/sukses
+
+        // Jika login gagal
+        $data['error'] = 'Email atau Password yang Anda masukkan salah.';
+
+        // Kembali ke halaman login dengan membawa pesan error
         return view('login_page', $data);
+    }
+
+    /**
+     * Logout dan hapus session.
+     */
+    public function logout()
+    {
+        session()->destroy();
+
+        return redirect()->to(site_url('/'));
     }
 }
