@@ -34,12 +34,26 @@
 </nav>
 
 <main class="container py-4">
-    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
         <div>
             <h1 class="h4 mb-1">Dashboard Monitoring Berita</h1>
-            <p class="text-muted mb-0 small">Selamat datang, <?= esc($user_name) ?>. Ringkasan pemantauan berita terkini.</p>
+            <p class="text-muted mb-0 small">
+                Selamat datang, <?= esc($user_name) ?>.
+                Menampilkan data: <strong><?= $selectedYear === 'all' ? 'Semua Tahun (' . min($availableYears) . '–' . max($availableYears) . ')' : 'Tahun ' . esc($selectedYear) ?></strong>
+            </p>
         </div>
-        <span class="badge bg-light text-dark border px-3 py-2">Update: <?= date('d M Y, H:i') ?></span>
+        <div class="btn-group" role="group" aria-label="Filter Tahun">
+            <a href="<?= site_url('dashboard?tahun=all') ?>"
+               class="btn btn-sm <?= $selectedYear === 'all' ? 'btn-primary' : 'btn-outline-primary' ?>">
+                Semua Tahun
+            </a>
+            <?php foreach ($availableYears as $yr): ?>
+                <a href="<?= site_url('dashboard?tahun=' . $yr) ?>"
+                   class="btn btn-sm <?= $selectedYear === (string) $yr ? 'btn-primary' : 'btn-outline-primary' ?>">
+                    <?= esc((string) $yr) ?>
+                </a>
+            <?php endforeach; ?>
+        </div>
     </div>
 
     <div class="row g-3 mb-4">
@@ -81,7 +95,7 @@
         <div class="col-lg-8">
             <div class="card table-card">
                 <div class="card-header bg-white border-0 pt-3 pb-2 d-flex flex-wrap justify-content-between align-items-center gap-2">
-                    <h2 class="h6 mb-0 fw-semibold">Berita Terpantau Terbaru</h2>
+                    <h2 class="h6 mb-0 fw-semibold">Berita Terpantau</h2>
                     <div class="d-flex gap-2">
                         <input type="text" id="searchInput" class="form-control form-control-sm" placeholder="Cari judul atau media...">
                         <select id="sentimentFilter" class="form-select form-select-sm" style="width: auto;">
@@ -101,7 +115,7 @@
                                     <th>Media</th>
                                     <th>Kategori</th>
                                     <th>Sentimen</th>
-                                    <th class="pe-3">Waktu</th>
+                                    <th class="pe-3">Tanggal</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -128,7 +142,43 @@
             </div>
         </div>
 
-        <div class="col-lg-4">
+        <div class="col-lg-4 d-flex flex-column gap-4">
+            <div class="card table-card">
+                <div class="card-header bg-white border-0 pt-3 pb-2">
+                    <h2 class="h6 mb-0 fw-semibold">Rekapitulasi Per Tahun</h2>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-sm align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="ps-3">Tahun</th>
+                                    <th class="text-end">Total</th>
+                                    <th class="text-end text-success">+</th>
+                                    <th class="text-end text-secondary">=</th>
+                                    <th class="text-end text-danger pe-3">-</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php foreach ($yearlySummary as $yr => $sum): ?>
+                                    <tr class="<?= $selectedYear === (string) $yr ? 'table-primary' : '' ?>">
+                                        <td class="ps-3">
+                                            <a href="<?= site_url('dashboard?tahun=' . $yr) ?>" class="text-decoration-none fw-semibold">
+                                                <?= esc((string) $yr) ?>
+                                            </a>
+                                        </td>
+                                        <td class="text-end fw-medium"><?= number_format($sum['total']) ?></td>
+                                        <td class="text-end text-success"><?= number_format($sum['positive']) ?></td>
+                                        <td class="text-end text-secondary"><?= number_format($sum['neutral']) ?></td>
+                                        <td class="text-end text-danger pe-3"><?= number_format($sum['negative']) ?></td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
             <div class="card table-card">
                 <div class="card-header bg-white border-0 pt-3 pb-2">
                     <h2 class="h6 mb-0 fw-semibold">Sumber Media Teratas</h2>
