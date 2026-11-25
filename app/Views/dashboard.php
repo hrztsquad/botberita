@@ -42,17 +42,23 @@
                 Menampilkan data: <strong><?= $selectedYear === 'all' ? 'Semua Tahun (' . min($availableYears) . '–' . max($availableYears) . ')' : 'Tahun ' . esc($selectedYear) ?></strong>
             </p>
         </div>
-        <div class="btn-group" role="group" aria-label="Filter Tahun">
-            <a href="<?= site_url('dashboard?tahun=all') ?>"
-               class="btn btn-sm <?= $selectedYear === 'all' ? 'btn-primary' : 'btn-outline-primary' ?>">
-                Semua Tahun
-            </a>
-            <?php foreach ($availableYears as $yr): ?>
-                <a href="<?= site_url('dashboard?tahun=' . $yr) ?>"
-                   class="btn btn-sm <?= $selectedYear === (string) $yr ? 'btn-primary' : 'btn-outline-primary' ?>">
-                    <?= esc((string) $yr) ?>
+        <div class="d-flex flex-wrap align-items-center gap-2">
+            <div class="btn-group" role="group" aria-label="Filter Tahun">
+                <a href="<?= site_url('dashboard?tahun=all') ?>"
+                   class="btn btn-sm <?= $selectedYear === 'all' ? 'btn-primary' : 'btn-outline-primary' ?>">
+                    Semua Tahun
                 </a>
-            <?php endforeach; ?>
+                <?php foreach ($availableYears as $yr): ?>
+                    <a href="<?= site_url('dashboard?tahun=' . $yr) ?>"
+                       class="btn btn-sm <?= $selectedYear === (string) $yr ? 'btn-primary' : 'btn-outline-primary' ?>">
+                        <?= esc((string) $yr) ?>
+                    </a>
+                <?php endforeach; ?>
+            </div>
+            <a href="<?= site_url('dashboard/pdf?tahun=' . urlencode($selectedYear)) ?>"
+               class="btn btn-sm btn-danger">
+                Export PDF <?= $selectedYear === 'all' ? '(Per Tahun)' : '(' . esc($selectedYear) . ')' ?>
+            </a>
         </div>
     </div>
 
@@ -156,7 +162,8 @@
                                     <th class="text-end">Total</th>
                                     <th class="text-end text-success">+</th>
                                     <th class="text-end text-secondary">=</th>
-                                    <th class="text-end text-danger pe-3">-</th>
+                                    <th class="text-end text-danger">-</th>
+                                    <th class="text-end pe-3">PDF</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -170,7 +177,12 @@
                                         <td class="text-end fw-medium"><?= number_format($sum['total']) ?></td>
                                         <td class="text-end text-success"><?= number_format($sum['positive']) ?></td>
                                         <td class="text-end text-secondary"><?= number_format($sum['neutral']) ?></td>
-                                        <td class="text-end text-danger pe-3"><?= number_format($sum['negative']) ?></td>
+                                        <td class="text-end text-danger"><?= number_format($sum['negative']) ?></td>
+                                        <td class="text-end pe-3">
+                                            <a href="<?= site_url('dashboard/pdf?tahun=' . $yr) ?>" class="btn btn-outline-danger btn-sm py-0 px-2" title="Unduh PDF Tahun <?= esc((string) $yr) ?>">
+                                                PDF
+                                            </a>
+                                        </td>
                                     </tr>
                                 <?php endforeach; ?>
                             </tbody>

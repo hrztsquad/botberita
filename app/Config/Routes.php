@@ -8,3 +8,4 @@ $routes->get('auth/login', 'Auth::index');
 $routes->post('auth/login', 'Auth::login');
 $routes->get('logout', 'Auth::logout');
 $routes->get('dashboard', 'Dashboard::index');
+$routes->get('dashboard/pdf', 'Dashboard::exportPdf');
