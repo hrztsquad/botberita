@@ -19,6 +19,32 @@
             border-radius: 0.75rem;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
         }
+        .article-excerpt {
+            font-size: 0.85rem;
+            color: #555;
+            line-height: 1.45;
+        }
+        .modal-backdrop-custom {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1050;
+            padding: 1rem;
+        }
+        .modal-backdrop-custom.show {
+            display: flex;
+        }
+        .modal-dialog-custom {
+            background: #fff;
+            border-radius: 0.75rem;
+            max-width: 680px;
+            width: 100%;
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
     </style>
 </head>
 <body>
@@ -39,7 +65,8 @@
             <h1 class="h4 mb-1">Dashboard Monitoring Berita</h1>
             <p class="text-muted mb-0 small">
                 Selamat datang, <?= esc($user_name) ?>.
-                Menampilkan data: <strong><?= $selectedYear === 'all' ? 'Semua Tahun (' . min($availableYears) . '–' . max($availableYears) . ')' : 'Tahun ' . esc($selectedYear) ?></strong>
+                Menampilkan <strong><?= count($articles) ?> berita lengkap</strong> untuk:
+                <strong><?= $selectedYear === 'all' ? 'Semua Tahun (' . min($availableYears) . '–' . max($availableYears) . ')' : 'Tahun ' . esc($selectedYear) ?></strong>
             </p>
         </div>
         <div class="d-flex flex-wrap align-items-center gap-2">
@@ -101,9 +128,9 @@
         <div class="col-lg-8">
             <div class="card table-card">
                 <div class="card-header bg-white border-0 pt-3 pb-2 d-flex flex-wrap justify-content-between align-items-center gap-2">
-                    <h2 class="h6 mb-0 fw-semibold">Berita Terpantau</h2>
+                    <h2 class="h6 mb-0 fw-semibold">Daftar Berita Lengkap (<span id="visibleCount"><?= count($articles) ?></span>)</h2>
                     <div class="d-flex gap-2">
-                        <input type="text" id="searchInput" class="form-control form-control-sm" placeholder="Cari judul atau media...">
+                        <input type="text" id="searchInput" class="form-control form-control-sm" placeholder="Cari judul, isi, atau media...">
                         <select id="sentimentFilter" class="form-select form-select-sm" style="width: auto;">
                             <option value="">Semua Sentimen</option>
                             <option value="Positif">Positif</option>
@@ -113,36 +140,40 @@
                     </div>
                 </div>
                 <div class="card-body p-0">
-                    <div class="table-responsive">
-                        <table class="table table-hover align-middle mb-0" id="newsTable">
-                            <thead class="table-light">
-                                <tr>
-                                    <th class="ps-3">Judul Berita</th>
-                                    <th>Media</th>
-                                    <th>Kategori</th>
-                                    <th>Sentimen</th>
-                                    <th class="pe-3">Tanggal</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php foreach ($articles as $article): ?>
-                                    <?php
-                                        $badgeClass = match ($article['sentiment']) {
-                                            'Positif' => 'bg-success',
-                                            'Negatif' => 'bg-danger',
-                                            default   => 'bg-secondary',
-                                        };
-                                    ?>
-                                    <tr data-sentiment="<?= esc($article['sentiment']) ?>">
-                                        <td class="ps-3 fw-medium"><?= esc($article['title']) ?></td>
-                                        <td><?= esc($article['media']) ?></td>
-                                        <td><span class="badge bg-light text-dark border"><?= esc($article['category']) ?></span></td>
-                                        <td><span class="badge <?= $badgeClass ?>"><?= esc($article['sentiment']) ?></span></td>
-                                        <td class="pe-3 text-muted small text-nowrap"><?= esc($article['date']) ?></td>
-                                    </tr>
-                                <?php endforeach; ?>
-                            </tbody>
-                        </table>
+                    <div class="list-group list-group-flush" id="newsList">
+                        <?php foreach ($articles as $article): ?>
+                            <?php
+                                $badgeClass = match ($article['sentiment']) {
+                                    'Positif' => 'bg-success',
+                                    'Negatif' => 'bg-danger',
+                                    default   => 'bg-secondary',
+                                };
+                            ?>
+                            <div class="list-group-item py-3 px-3 news-item" data-sentiment="<?= esc($article['sentiment']) ?>">
+                                <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-1">
+                                    <h3 class="h6 mb-0 fw-semibold"><?= esc($article['title']) ?></h3>
+                                    <span class="badge <?= $badgeClass ?>"><?= esc($article['sentiment']) ?></span>
+                                </div>
+                                <div class="small text-muted mb-2">
+                                    <strong><?= esc($article['media']) ?></strong>
+                                    &bull; <?= esc($article['category']) ?>
+                                    &bull; <?= esc($article['author']) ?>
+                                    &bull; <?= esc($article['date']) ?>
+                                </div>
+                                <p class="article-excerpt mb-2"><?= esc($article['content']) ?></p>
+                                <button type="button"
+                                        class="btn btn-outline-primary btn-sm py-0 px-2 read-detail-btn"
+                                        data-title="<?= esc($article['title']) ?>"
+                                        data-media="<?= esc($article['media']) ?>"
+                                        data-category="<?= esc($article['category']) ?>"
+                                        data-sentiment="<?= esc($article['sentiment']) ?>"
+                                        data-author="<?= esc($article['author']) ?>"
+                                        data-date="<?= esc($article['date']) ?>"
+                                        data-content="<?= esc($article['content']) ?>">
+                                    Baca Detail
+                                </button>
+                            </div>
+                        <?php endforeach; ?>
                     </div>
                 </div>
             </div>
@@ -210,27 +241,81 @@
     </div>
 </main>
 
+<div class="modal-backdrop-custom" id="articleModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal-dialog-custom">
+        <div class="p-3 border-bottom d-flex justify-content-between align-items-start gap-2">
+            <div>
+                <h2 class="h5 mb-1" id="modalTitle"></h2>
+                <div class="small text-muted" id="modalMeta"></div>
+            </div>
+            <button type="button" class="btn-close" id="closeModalBtn" aria-label="Tutup"></button>
+        </div>
+        <div class="p-3">
+            <p class="mb-0" id="modalContent" style="line-height: 1.65;"></p>
+        </div>
+        <div class="p-3 border-top bg-light text-end">
+            <button type="button" class="btn btn-secondary btn-sm" id="closeModalFooterBtn">Tutup</button>
+        </div>
+    </div>
+</div>
+
 <script>
 (function () {
     const searchInput = document.getElementById('searchInput');
     const sentimentFilter = document.getElementById('sentimentFilter');
-    const rows = document.querySelectorAll('#newsTable tbody tr');
+    const items = document.querySelectorAll('#newsList .news-item');
+    const visibleCountEl = document.getElementById('visibleCount');
 
-    function filterRows() {
+    function filterItems() {
         const q = searchInput.value.toLowerCase().trim();
         const sentiment = sentimentFilter.value;
+        let visible = 0;
 
-        rows.forEach((row) => {
-            const text = row.textContent.toLowerCase();
-            const rowSentiment = row.getAttribute('data-sentiment');
+        items.forEach((item) => {
+            const text = item.textContent.toLowerCase();
+            const itemSentiment = item.getAttribute('data-sentiment');
             const matchesSearch = !q || text.includes(q);
-            const matchesSentiment = !sentiment || rowSentiment === sentiment;
-            row.style.display = matchesSearch && matchesSentiment ? '' : 'none';
+            const matchesSentiment = !sentiment || itemSentiment === sentiment;
+            const show = matchesSearch && matchesSentiment;
+            item.style.display = show ? '' : 'none';
+            if (show) visible++;
         });
+
+        visibleCountEl.textContent = visible;
     }
 
-    searchInput.addEventListener('input', filterRows);
-    sentimentFilter.addEventListener('change', filterRows);
+    searchInput.addEventListener('input', filterItems);
+    sentimentFilter.addEventListener('change', filterItems);
+
+    const modal = document.getElementById('articleModal');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalMeta = document.getElementById('modalMeta');
+    const modalContent = document.getElementById('modalContent');
+
+    document.querySelectorAll('.read-detail-btn').forEach((btn) => {
+        btn.addEventListener('click', () => {
+            modalTitle.textContent = btn.getAttribute('data-title');
+            modalMeta.textContent = [
+                btn.getAttribute('data-media'),
+                btn.getAttribute('data-category'),
+                btn.getAttribute('data-sentiment'),
+                btn.getAttribute('data-author'),
+                btn.getAttribute('data-date'),
+            ].join(' • ');
+            modalContent.textContent = btn.getAttribute('data-content');
+            modal.classList.add('show');
+        });
+    });
+
+    function closeModal() {
+        modal.classList.remove('show');
+    }
+
+    document.getElementById('closeModalBtn').addEventListener('click', closeModal);
+    document.getElementById('closeModalFooterBtn').addEventListener('click', closeModal);
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) closeModal();
+    });
 })();
 </script>
 

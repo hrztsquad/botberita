@@ -174,7 +174,10 @@
                         };
                     ?>
                     <tr>
-                        <td><?= esc($article['title']) ?></td>
+                        <td>
+                            <strong><?= esc($article['title']) ?></strong>
+                            <div style="font-size: 9px; color: #555; margin-top: 3px;"><?= esc($article['content']) ?></div>
+                        </td>
                         <td><?= esc($article['media']) ?></td>
                         <td><?= esc($article['category']) ?></td>
                         <td><span class="badge <?= $badgeClass ?>"><?= esc($article['sentiment']) ?></span></td>
